@@ -23,6 +23,11 @@ if (process.env.dbPass) dbData.password = process.env.dbpass;
 
 const pool = mysql.createPool(dbData);
 
+process.on("SIGINT", () => {
+  pool.end();
+  process.exit(0);
+});
+
 const hub = new Hub();
 hub.init(pool).then((_) => console.log(hub.getRoom(1)));
 
