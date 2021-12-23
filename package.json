@@ -1,0 +1,31 @@
+{
+  "name": "shiritori_server",
+  "version": "1.0.0",
+  "description": "Shiritori Game Server",
+  "main": "index.js",
+  "scripts": {
+    "run": "node ./index.js"
+  },
+  "keywords": [
+    "shiritori",
+    "word chain"
+  ],
+  "author": "SkillGG",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/skillgg/shiri_server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/skillgg/shill/issues"
+  },
+  "homepage": "https://github.com/skillgg/shiri_server#readme",
+  "dependencies": {
+    "fastify": "^3.25.2",
+    "fastify-cookie": "^5.4.0",
+    "fastify-cors": "^6.0.2",
+    "fastify-sse": "^1.0.0",
+    "mysql2": "^2.3.3",
+    "pino-pretty": "^7.3.0"
+  }
+}
