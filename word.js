@@ -1,4 +1,4 @@
-const wordRegex = [/^[a-ząćęłóśźż]+$/i, /^[a-z]+$/i]
+const wordRegex = [/^[a-z]+$/i, /^[a-ząćęłóśźż]+$/i]
 
 /** @type {Set<string>[]} */
 const WordList = require("./wordlist.js").default

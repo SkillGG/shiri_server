@@ -19,7 +19,9 @@ const website = dbData.website;
 const cookieDomain = dbData.cookie;
 delete dbData.website;
 delete dbData.cookie;
-if (process.env.dbPass) dbData.password = process.env.dbpass;
+if (process.env.dbpass) dbData.password = process.env.dbpass;
+
+console.log(dbData)
 
 const pool = mysql.createPool(dbData);
 
