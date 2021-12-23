@@ -14,24 +14,26 @@ const Word = require("./word").default
 const logConsole = (msg, ...opt) =>
   console.log(`\n${msg}`, ...opt, `\n\n`)
 
+  
 const website = "http://localhost:3000"
-// const website = "https://agrafka01.skillgg.repl.co"
-
 const cookieDomain = "localhost"
-// const cookieDomain = "skillgg.repl.co"
-
-/*const dbData = {
-  host: "sql11.freemysqlhosting.net",
-  password: process.env.dbpass,
-  user: "sql11460247",
-  database: "sql11460247",
-}*/
 const dbData = {
   host: "localhost",
   password: "game",
   user: "game",
   database: "agrafka",
 }
+
+/*
+const website = "https://agrafka01.skillgg.repl.co"
+const cookieDomain = "skillgg.repl.co"
+const dbData = {
+  host: "sql11.freemysqlhosting.net",
+  password: process.env.dbpass,
+  user: "sql11460247",
+  database: "sql11460247",
+}
+*/
 console.log("dbData", dbData)
 
 const pool = mysql.createPool(dbData)
