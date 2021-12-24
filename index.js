@@ -21,7 +21,7 @@ delete dbData.website;
 delete dbData.cookie;
 if (process.env.dbpass) dbData.password = process.env.dbpass;
 
-console.log(dbData)
+console.log(dbData);
 
 const pool = mysql.createPool(dbData);
 
@@ -236,11 +236,12 @@ server.post("/game/:id/wrong", async (req, res) => {
   const roomid = req.params.id;
   const playerid = parseInt(req.cookies.loggedas, 10);
   const room = hub.getRoom(roomid);
+  const reason = JSON.parse(req.body).reason;
   console.log(`\nPlayer ${playerid} lost a point in room #${roomid}\n`);
   if (room && playerid) {
     room.addPoints(playerid, -1);
     room.sendEvent({
-      data: { type: "points", playerid, data: -1 },
+      data: { type: "points", playerid, data: { pts: -1, reason } },
       time: new Date().getTime(),
     });
   }
@@ -261,7 +262,7 @@ server.post("/game/:id/send", async (req, res) => {
       data: {
         type: "points",
         playerid,
-        data: { points: -1, reason, word: word.word },
+        data: { pts: -1, reason, word: word.word },
       },
       time: new Date().getTime(),
     });
@@ -273,7 +274,7 @@ server.post("/game/:id/send", async (req, res) => {
       if (room.checkDictionary(word)) {
         console.log("Deep finished!");
         if (!room.checkForWord(word)) {
-          if (!room.shiriCheck(word)) {
+          if (room.shiriCheck(word)) {
             room.registerWord(word.playerid, word.word, word.time);
             room.addPoints(playerid, 1);
             room.sendEvent({

@@ -25,9 +25,15 @@ class Room {
      */
     this.sendEvents = new Map()
   }
+  /**
+   * 
+   * @param {Word} word 
+   * @returns 
+   */
   shiriCheck(word){
     const last = this.data[this.data.length];
-    if(!last.word) return true;
+    console.log(last)
+    if(!last || !last.word) return true;
     if(last.word.charAt(last.word.length-1)===word.word.charAt(0)) return true;
     return false;
   }
