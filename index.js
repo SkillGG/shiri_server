@@ -21,8 +21,6 @@ delete dbData.website;
 delete dbData.cookie;
 if (process.env.dbpass) dbData.password = process.env.dbpass;
 
-console.log(dbData);
-
 const pool = mysql.createPool(dbData);
 
 process.on("SIGINT", () => {
