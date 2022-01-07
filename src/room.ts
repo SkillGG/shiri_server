@@ -3,6 +3,13 @@ import Word from "./word";
 export type ParsedRoomData = [boolean, [number, number][], Word[]];
 
 import { SendEvent } from "../../shiri_common/base";
+import {
+  defaultGameMode,
+  GameMode,
+  GameModes,
+  gmToNN,
+  NNGameMode,
+} from "../../shiri_common/gamemodes";
 import EventEmitter from "events";
 
 export type SendCallback = (data: SendEvent) => void;
@@ -20,6 +27,7 @@ export default class Room {
   creator: Exclude<number, 0>;
   eventEmitter: EventEmitter;
   evID: number;
+  mode: number;
   constructor(
     id: number,
     players: Set<number> = new Set(),
@@ -28,7 +36,8 @@ export default class Room {
     maxPlayers: number = 4,
     pts: Map<number, number> = new Map<number, number>(),
     lang: number = 0,
-    creator: number = 1
+    creator: number = 1,
+    mode: number = 0
   ) {
     this.players = players;
     this.words = words;
@@ -40,9 +49,13 @@ export default class Room {
     this.language = lang;
     this.creator = creator;
     this.evID = 0;
+    this.mode = mode;
   }
   eventID(): number {
     return this.evID++;
+  }
+  getGamemode(): NNGameMode {
+    return gmToNN(GameModes.find((gm: GameMode) => gm.id == this.mode));
   }
   shiriCheck(word: Word) {
     if (this.words.length < 1) return true;

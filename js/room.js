@@ -4,9 +4,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const word_1 = __importDefault(require("./word"));
+const gamemodes_1 = require("../../shiri_common/gamemodes");
 const events_1 = __importDefault(require("events"));
 class Room {
-    constructor(id, players = new Set(), words = [], finished = false, maxPlayers = 4, pts = new Map(), lang = 0, creator = 1) {
+    constructor(id, players = new Set(), words = [], finished = false, maxPlayers = 4, pts = new Map(), lang = 0, creator = 1, mode = 0) {
         Object.defineProperty(this, "players", {
             enumerable: true,
             configurable: true,
@@ -67,6 +68,12 @@ class Room {
             writable: true,
             value: void 0
         });
+        Object.defineProperty(this, "mode", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
         this.players = players;
         this.words = words;
         this.points = pts;
@@ -77,9 +84,13 @@ class Room {
         this.language = lang;
         this.creator = creator;
         this.evID = 0;
+        this.mode = mode;
     }
     eventID() {
         return this.evID++;
+    }
+    getGamemode() {
+        return (0, gamemodes_1.gmToNN)(gamemodes_1.GameModes.find((gm) => gm.id == this.mode));
     }
     shiriCheck(word) {
         if (this.words.length < 1)

@@ -9,6 +9,7 @@ type dbRoomPacket = {
   maxplayers: string;
   lang: string | null;
   creator: string;
+  mode: string;
 } & mysql.OkPacket;
 
 export type SQLUpdateRoom = (
@@ -79,6 +80,7 @@ export default class Hub {
         const creator = parseInt(e.creator || "1", 10);
         const parsedData = Room.parseState(e.gamestate || "");
         const points = new Map(parsedData[1]);
+        const mode = parseInt(e.mode, 10);
         this.addRoom(
           new Room(
             roomid,
@@ -88,7 +90,8 @@ export default class Hub {
             maxplayers,
             points,
             lang,
-            creator
+            creator,
+            mode
           )
         );
       });

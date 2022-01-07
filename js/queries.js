@@ -6,7 +6,7 @@ const Queries = {
     getPlayerName: "select name from users where id=?",
     getPlayerInfo: "select id, pin from users where id=?",
     getGuest: "select ifnull(max(id),0) as num from guests",
-    getRoomList: "select roomid, gamestate, maxplayers, lang, creator from games where gamestate not like '%~'",
+    getRoomList: "select roomid, gamestate, maxplayers, lang, creator, mode from games where gamestate not like '%~'",
     updateRoom: `update games set gamestate = ? where gamestate not like "%~" and roomid=?;`,
     getNumberOfPlayersWithUsername: "select count(name) as num from users where name = ?",
 };

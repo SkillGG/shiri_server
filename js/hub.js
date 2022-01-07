@@ -90,7 +90,8 @@ class Hub {
                     const creator = parseInt(e.creator || "1", 10);
                     const parsedData = room_1.default.parseState(e.gamestate || "");
                     const points = new Map(parsedData[1]);
-                    this.addRoom(new room_1.default(roomid, undefined, parsedData[2], parsedData[0], maxplayers, points, lang, creator));
+                    const mode = parseInt(e.mode, 10);
+                    this.addRoom(new room_1.default(roomid, undefined, parsedData[2], parsedData[0], maxplayers, points, lang, creator, mode));
                 });
             }
             this.rooms.forEach((e) => e.clearBadPlayers());

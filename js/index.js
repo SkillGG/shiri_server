@@ -219,6 +219,7 @@ server.post("/game/:id/join", { logLevel: "warn" }, (req, res) => __awaiter(void
                 currplayers: [...room.players],
                 language: room.language,
                 creator: room.creator,
+                modeid: room.getGamemode().id,
             };
         }
         else
@@ -304,7 +305,7 @@ server.post("/game/:id/send", (req, res) => __awaiter(void 0, void 0, void 0, fu
                 if (!room.checkForWord(word)) {
                     if (room.shiriCheck(word)) {
                         room.registerWord(word.playerid, word.word, word.time);
-                        room.addPoints(playerid, 1);
+                        room.addPoints(playerid, room.getGamemode().wordToPts(word));
                         room_1.default.emitEvent({
                             data: { type: "input", playerid, word: word.word },
                             time: word.time,
@@ -371,7 +372,7 @@ server.get("/game/list", (req, res) => __awaiter(void 0, void 0, void 0, functio
     }
     const roomlist = hub.rooms.reduce((prev, next) => {
         return (prev +
-            `${next.id}[${next.getNumberOfPlayersLoggedIn()}/${next.maxPlayers}]`);
+            `${next.id}[${next.getNumberOfPlayersLoggedIn()}/${next.maxPlayers}]${next.mode}!`);
     }, "");
     return roomlist;
 }));

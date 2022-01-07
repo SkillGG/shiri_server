@@ -249,6 +249,7 @@ server.post(
           currplayers: [...room.players],
           language: room.language,
           creator: room.creator,
+          modeid: room.getGamemode().id,
         };
       } else throw { status: 403, message: "Unknown error" };
     } else
@@ -344,7 +345,10 @@ server.post("/game/:id/send", async (req: FRequest<{ id: string }>, res) => {
         if (!room.checkForWord(word)) {
           if (room.shiriCheck(word)) {
             room.registerWord(word.playerid, word.word, word.time);
-            room.addPoints(playerid, 1);
+            room.addPoints(
+              playerid,
+              room.getGamemode().wordToPts(word)
+            );
             Room.emitEvent(
               {
                 data: { type: "input", playerid, word: word.word },
@@ -414,7 +418,9 @@ server.get("/game/list", async (req, res) => {
   const roomlist = hub.rooms.reduce((prev, next) => {
     return (
       prev +
-      `${next.id}[${next.getNumberOfPlayersLoggedIn()}/${next.maxPlayers}]`
+      `${next.id}[${next.getNumberOfPlayersLoggedIn()}/${next.maxPlayers}]${
+        next.mode
+      }!`
     );
   }, "");
   return roomlist;
