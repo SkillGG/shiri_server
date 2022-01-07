@@ -1,8 +1,8 @@
 /// <reference types="node" />
 import Word from "./word";
 export declare type ParsedRoomData = [boolean, [number, number][], Word[]];
-import { SendEvent } from "../../shiri_common/base";
-import { NNGameMode } from "../../shiri_common/gamemodes";
+import { SendEvent } from "../shiri_common/base";
+import { NNGameMode } from "../shiri_common/gamemodes";
 import EventEmitter from "events";
 export declare type SendCallback = (data: SendEvent) => void;
 export declare type EventData = [SendEvent];

@@ -10,7 +10,7 @@ let server = fastify({
 });
 
 import Queries from "./queries";
-import { ErrorCode as Errors } from "../../shiri_common/errors";
+import { ErrorCode as Errors } from "../shiri_common/errors";
 
 import * as mysql from "mysql2";
 

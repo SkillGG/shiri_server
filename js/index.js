@@ -56,7 +56,7 @@ let server = (0, fastify_1.default)({
     logger: { prettyPrint: true, level: "warn" },
 });
 const queries_1 = __importDefault(require("./queries"));
-const errors_1 = require("../../shiri_common/errors");
+const errors_1 = require("../shiri_common/errors");
 const mysql = __importStar(require("mysql2"));
 const hub_1 = __importDefault(require("./hub"));
 const word_1 = __importDefault(require("./word"));

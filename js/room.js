@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const word_1 = __importDefault(require("./word"));
-const gamemodes_1 = require("../../shiri_common/gamemodes");
+const gamemodes_1 = require("../shiri_common/gamemodes");
 const events_1 = __importDefault(require("events"));
 class Room {
     constructor(id, players = new Set(), words = [], finished = false, maxPlayers = 4, pts = new Map(), lang = 0, creator = 1, mode = 0) {
