@@ -23,7 +23,7 @@ import CookiePlugin, { FastifyCookieOptions } from "fastify-cookie";
 import CorsPlugin, { FastifyCorsOptions } from "fastify-cors";
 import { on } from "events";
 import Room, { EventData } from "./room";
-import { SendEvent } from "../../shiri_common/base";
+import { SendEvent } from "../shiri_common/base";
 
 type xSql<T> = (T & mysql.OkPacket)[];
 
@@ -345,10 +345,7 @@ server.post("/game/:id/send", async (req: FRequest<{ id: string }>, res) => {
         if (!room.checkForWord(word)) {
           if (room.shiriCheck(word)) {
             room.registerWord(word.playerid, word.word, word.time);
-            room.addPoints(
-              playerid,
-              room.getGamemode().wordToPts(word)
-            );
+            room.addPoints(playerid, room.getGamemode().wordToPts(word));
             Room.emitEvent(
               {
                 data: { type: "input", playerid, word: word.word },

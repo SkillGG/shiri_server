@@ -2,14 +2,14 @@ import Word from "./word";
 
 export type ParsedRoomData = [boolean, [number, number][], Word[]];
 
-import { SendEvent } from "../../shiri_common/base";
+import { SendEvent } from "../shiri_common/base";
 import {
   defaultGameMode,
   GameMode,
   GameModes,
   gmToNN,
   NNGameMode,
-} from "../../shiri_common/gamemodes";
+} from "../shiri_common/gamemodes";
 import EventEmitter from "events";
 
 export type SendCallback = (data: SendEvent) => void;
