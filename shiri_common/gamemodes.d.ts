@@ -13,29 +13,29 @@ export interface GameRoomRefs {
         addPointState: PointStateSetter;
     };
 }
-export declare const defaultGameMode: NNGameMode;
-export declare const gmToNN: (gm?: GameMode) => NNGameMode;
-export interface NNGameMode extends GameMode {
+export interface ModeInfo {
+    description: string;
+    id: number;
+}
+export interface Scoring extends ModeInfo {
     wordToPts(word: Word): number;
     onWordCame(word: Word, refs?: GameRoomRefs): void;
     onPtsCame(points: {
         pts: number;
         playerid: Exclude<number, 0>;
     }, room: Room, refs?: GameRoomRefs): void;
-    isWin(room: Room, players: Points): false | PlayerID;
     wordCSSClass: (w: Word) => string;
 }
-export interface GameMode {
-    id: number;
-    description: Exclude<string, "">;
-    wordToPts?(word: Word): number;
-    onWordCame?(word: Word, refs?: GameRoomRefs): void;
-    onPtsCame?(points: {
-        pts: number;
-        playerid: Exclude<number, 0>;
-    }, room: Room, refs?: GameRoomRefs): void;
-    isWin?(room: Room, players: Points): false | PlayerID;
-    wordCSSClass?: (w: Word) => string;
+export interface WinCondition extends ModeInfo {
+    isWin(room: Room, players: Points): false | PlayerID;
 }
+export interface GameMode {
+    scoring: Scoring;
+    wincondition: WinCondition;
+}
+export declare const defaultScoring: Scoring;
+export declare const defaultWinCondition: WinCondition;
+export declare const defaultGameMode: GameMode;
 export declare const errTimeout = 2000;
-export declare const GameModes: GameMode[];
+export declare const ScoringSystems: Scoring[];
+export declare const WinConditions: WinCondition[];

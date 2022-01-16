@@ -1,9 +1,10 @@
 /// <reference types="node" />
 import Word from "./word";
 export declare type ParsedRoomData = [boolean, [number, number][], Word[]];
-import { SendEvent } from "../shiri_common/base";
-import { NNGameMode } from "../shiri_common/gamemodes";
+import { SendEvent, NewRoomData, LangIDs } from "../shiri_common/base";
+import { GameMode } from "../shiri_common/gamemodes";
 import EventEmitter from "events";
+export declare type RoomMode = Pick<NewRoomData, "WinCondition" | "Score">;
 export declare type SendCallback = (data: SendEvent) => void;
 export declare type EventData = [SendEvent];
 export default class Room {
@@ -13,14 +14,14 @@ export default class Room {
     id: number;
     finished: boolean;
     maxPlayers: number;
-    language: number;
+    language: LangIDs;
     creator: Exclude<number, 0>;
     eventEmitter: EventEmitter;
     evID: number;
-    mode: number;
-    constructor(id: number, players?: Set<number>, words?: Word[], finished?: boolean, maxPlayers?: number, pts?: Map<number, number>, lang?: number, creator?: number, mode?: number);
+    mode: RoomMode;
+    constructor(id: number, players?: Set<number>, words?: Word[], finished?: boolean, maxPlayers?: number, pts?: Map<number, number>, lang?: LangIDs, creator?: number, mode?: RoomMode);
     eventID(): number;
-    getGamemode(): NNGameMode;
+    getGamemode(): GameMode;
     shiriCheck(word: Word): boolean;
     shallowCorrect(word: Word): boolean;
     checkDictionary(word: Word): boolean;

@@ -23,7 +23,25 @@ declare type InputEvent = {
         word: string;
     };
 };
-export declare type SendEvent = (InOutEvent | PointEvent | InputEvent) & {
+declare type CheckEvent = {
+    data: {
+        type: "check";
+        playerid: number;
+    };
+};
+export declare type WinConditionIDs = 0 | 1;
+export declare type ScoreIDs = 0 | 1 | 2;
+export declare type LangIDs = 0 | 1;
+export declare type NewRoomData = {
+    WinCondition: WinConditionIDs;
+    Score: ScoreIDs;
+    MaxPlayers: number;
+    Dictionary: LangIDs;
+};
+export declare const existsScore: (n: number) => n is ScoreIDs;
+export declare const existsWinCondition: (n: number) => n is WinConditionIDs;
+export declare const existsLanguage: (n: number) => n is LangIDs;
+export declare type SendEvent = (CheckEvent | InOutEvent | PointEvent | InputEvent) & {
     time: number;
 };
 export declare type Word = {
@@ -50,10 +68,6 @@ export declare type Room = {
      */
     currplayers: number[];
     /**
-     * Room's dictionary
-     */
-    language: number;
-    /**
      * ID of the player who created/is the owner of the room
      */
     creator: number;
@@ -62,9 +76,9 @@ export declare type Room = {
      */
     gamemode?: GameMode;
     /**
-     * Room's gamemode id
+     * Room's gamemode data
      */
-    modeid: number;
+    creationdata: NewRoomData;
 };
 /**
  * List of points of each player

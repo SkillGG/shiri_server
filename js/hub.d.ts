@@ -8,6 +8,7 @@ export default class Hub {
     addNewRoom(roomid: number): Room;
     addRoom(room: Room): void;
     getRoom(id: number): Room | undefined;
+    getNextFreeRoom(): number;
     whereIs(playerid: number): number | null;
     saveRoom(roomid: number, update: SQLUpdateRoom): Promise<void>;
     saveRooms(update: SQLUpdateRoom): Promise<void>;

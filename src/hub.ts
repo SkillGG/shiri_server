@@ -1,7 +1,13 @@
-import Room from "./room";
+import Room, { RoomMode } from "./room";
 import queries from "./queries";
 
 import * as mysql from "mysql2";
+import { isGeneratorFunction } from "util/types";
+import {
+  existsLanguage,
+  existsScore,
+  existsWinCondition,
+} from "../shiri_common/base";
 
 type dbRoomPacket = {
   roomid: string;
@@ -9,7 +15,8 @@ type dbRoomPacket = {
   maxplayers: string;
   lang: string | null;
   creator: string;
-  mode: string;
+  wincondition: string;
+  scoring: string;
 } & mysql.OkPacket;
 
 export type SQLUpdateRoom = (
@@ -47,6 +54,11 @@ export default class Hub {
   getRoom(id: number): Room | undefined {
     return this.rooms.find((r) => r.id === id);
   }
+  getNextFreeRoom() {
+    for (let i = 1; true; i++) {
+      if (!this.getRoom(i) || this.getRoom(i)?.finished) return i;
+    }
+  }
   whereIs(playerid: number) {
     if (!playerid) return null;
     const foundRoom = this.rooms.find((room) => {
@@ -77,10 +89,16 @@ export default class Hub {
         const roomid = parseInt(e.roomid);
         const maxplayers = parseInt(e.maxplayers || "10", 10);
         const lang = parseInt(e.lang || "0", 10);
+        const dic = existsLanguage(lang) ? lang : 0;
         const creator = parseInt(e.creator || "1", 10);
         const parsedData = Room.parseState(e.gamestate || "");
         const points = new Map(parsedData[1]);
-        const mode = parseInt(e.mode, 10);
+        const wc = parseInt(e.wincondition, 10);
+        const sc = parseInt(e.scoring, 10);
+        const mode: RoomMode = {
+          WinCondition: existsWinCondition(wc) ? wc : 0,
+          Score: existsScore(sc) ? sc : 0,
+        };
         this.addRoom(
           new Room(
             roomid,
@@ -89,7 +107,7 @@ export default class Hub {
             parsedData[0],
             maxplayers,
             points,
-            lang,
+            dic,
             creator,
             mode
           )

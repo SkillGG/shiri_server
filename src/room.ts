@@ -2,15 +2,18 @@ import Word from "./word";
 
 export type ParsedRoomData = [boolean, [number, number][], Word[]];
 
-import { SendEvent } from "../shiri_common/base";
+import { SendEvent, NewRoomData, LangIDs } from "../shiri_common/base";
 import {
   defaultGameMode,
+  defaultScoring,
+  defaultWinCondition,
   GameMode,
-  GameModes,
-  gmToNN,
-  NNGameMode,
+  ScoringSystems,
+  WinConditions,
 } from "../shiri_common/gamemodes";
 import EventEmitter from "events";
+
+export type RoomMode = Pick<NewRoomData, "WinCondition" | "Score">;
 
 export type SendCallback = (data: SendEvent) => void;
 
@@ -23,11 +26,11 @@ export default class Room {
   id: number;
   finished: boolean;
   maxPlayers: number;
-  language: number;
+  language: LangIDs;
   creator: Exclude<number, 0>;
   eventEmitter: EventEmitter;
   evID: number;
-  mode: number;
+  mode: RoomMode;
   constructor(
     id: number,
     players: Set<number> = new Set(),
@@ -35,9 +38,9 @@ export default class Room {
     finished: boolean = false,
     maxPlayers: number = 4,
     pts: Map<number, number> = new Map<number, number>(),
-    lang: number = 0,
+    lang: LangIDs = 0,
     creator: number = 1,
-    mode: number = 0
+    mode: RoomMode = { Score: 0, WinCondition: 0 }
   ) {
     this.players = players;
     this.words = words;
@@ -54,8 +57,14 @@ export default class Room {
   eventID(): number {
     return this.evID++;
   }
-  getGamemode(): NNGameMode {
-    return gmToNN(GameModes.find((gm: GameMode) => gm.id == this.mode));
+  getGamemode(): GameMode {
+    return {
+      scoring:
+        ScoringSystems.find((g) => g.id === this.mode.Score) || defaultScoring,
+      wincondition:
+        WinConditions.find((w) => w.id === this.mode.WinCondition) ||
+        defaultWinCondition,
+    };
   }
   shiriCheck(word: Word) {
     if (this.words.length < 1) return true;

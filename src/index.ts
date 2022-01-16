@@ -1,9 +1,4 @@
-import {
-  default as fastify,
-  FastifyReply,
-  FastifyRequest,
-  onSendHookHandler,
-} from "fastify";
+import { default as fastify, FastifyReply, FastifyRequest } from "fastify";
 import * as fs from "fs";
 let server = fastify({
   logger: { prettyPrint: true, level: "warn" },
@@ -14,7 +9,7 @@ import { ErrorCode as Errors } from "../shiri_common/errors";
 
 import * as mysql from "mysql2";
 
-import Hub from "./hub";
+import Hub, { SQLUpdateRoom } from "./hub";
 import Word from "./word";
 import { RouteGenericInterface } from "fastify/types/route";
 import { Server, IncomingMessage, ServerResponse } from "http";
@@ -23,7 +18,14 @@ import CookiePlugin, { FastifyCookieOptions } from "fastify-cookie";
 import CorsPlugin, { FastifyCorsOptions } from "fastify-cors";
 import { on } from "events";
 import Room, { EventData } from "./room";
-import { SendEvent } from "../shiri_common/base";
+import {
+  NewRoomData,
+  SendEvent,
+  Room as BaseRoom,
+  existsWinCondition,
+} from "../shiri_common/base";
+import { WinConditions } from "../shiri_common/gamemodes";
+import { OkPacket } from "mysql2";
 
 type xSql<T> = (T & mysql.OkPacket)[];
 
@@ -216,11 +218,37 @@ server.post(
   { logLevel: "warn" },
   async (req: FRequest<{}>, res) => {
     allowCredentials(res);
-    const userid = parseInt(req.cookies.loggedas, 10);
-    if (!userid) throw { status: 403, message: "Not logged in" };
-    const options = JSON.parse(req.body);
-    const roomid = 99;
-    return { status: 200, roomid };
+    const creatorid = parseInt(req.cookies.loggedas, 10);
+    const { MaxPlayers, Score, WinCondition, Dictionary } = JSON.parse(
+      req.body
+    ) as NewRoomData;
+    const freeRoomID = hub.getNextFreeRoom();
+    const room = new Room(
+      freeRoomID,
+      undefined,
+      undefined,
+      false,
+      MaxPlayers,
+      undefined,
+      Dictionary,
+      creatorid,
+      {
+        WinCondition,
+        Score,
+      }
+    );
+    hub.addRoom(room);
+    const promise = pool.promise();
+    const [insert] = await promise.execute<OkPacket>(Queries.createRoom, [
+      freeRoomID,
+      creatorid,
+      Dictionary,
+      Score,
+      WinCondition,
+      MaxPlayers,
+    ]);
+    if (insert.affectedRows > 0) return { id: room.id };
+    else return { err: true };
   }
 );
 
@@ -243,14 +271,20 @@ server.post(
       );
       if (room.addPlayer(userid)) {
         console.log("Roomstate:", room.getState(), room);
-        return {
+        const mode = room.getGamemode();
+        const ret: BaseRoom & { status: number } = {
           status: 200,
           state: room.getState(),
           currplayers: [...room.players],
-          language: room.language,
           creator: room.creator,
-          modeid: room.getGamemode().id,
+          creationdata: {
+            MaxPlayers: room.maxPlayers,
+            Score: room.mode.Score,
+            WinCondition: room.mode.WinCondition,
+            Dictionary: room.language,
+          },
         };
+        return ret;
       } else throw { status: 403, message: "Unknown error" };
     } else
       throw {
@@ -345,7 +379,10 @@ server.post("/game/:id/send", async (req: FRequest<{ id: string }>, res) => {
         if (!room.checkForWord(word)) {
           if (room.shiriCheck(word)) {
             room.registerWord(word.playerid, word.word, word.time);
-            room.addPoints(playerid, room.getGamemode().wordToPts(word));
+            room.addPoints(
+              playerid,
+              room.getGamemode().scoring.wordToPts(word)
+            );
             Room.emitEvent(
               {
                 data: { type: "input", playerid, word: word.word },
@@ -445,6 +482,24 @@ server.post("/logout", { logLevel: "warn" }, async (req, res) => {
   }
   res.clearCookie("loggedas");
   return true;
+});
+
+/** /check */
+
+server.post("/check", async (req: FRequest<{ id: string }>, res) => {
+  allowCredentials(res);
+  const playerid = parseInt(req.cookies.loggedas, 10);
+  const room = hub.getRoom(parseInt(req.params.id, 10));
+  if (room) {
+    Room.emitEvent(
+      {
+        data: { type: "check", playerid },
+        time: new Date().getTime(),
+      },
+      room
+    );
+  }
+  return 1;
 });
 
 /** /events */

@@ -7,7 +7,7 @@ const word_1 = __importDefault(require("./word"));
 const gamemodes_1 = require("../shiri_common/gamemodes");
 const events_1 = __importDefault(require("events"));
 class Room {
-    constructor(id, players = new Set(), words = [], finished = false, maxPlayers = 4, pts = new Map(), lang = 0, creator = 1, mode = 0) {
+    constructor(id, players = new Set(), words = [], finished = false, maxPlayers = 4, pts = new Map(), lang = 0, creator = 1, mode = { Score: 0, WinCondition: 0 }) {
         Object.defineProperty(this, "players", {
             enumerable: true,
             configurable: true,
@@ -90,7 +90,11 @@ class Room {
         return this.evID++;
     }
     getGamemode() {
-        return (0, gamemodes_1.gmToNN)(gamemodes_1.GameModes.find((gm) => gm.id == this.mode));
+        return {
+            scoring: gamemodes_1.ScoringSystems.find((g) => g.id === this.mode.Score) || gamemodes_1.defaultScoring,
+            wincondition: gamemodes_1.WinConditions.find((w) => w.id === this.mode.WinCondition) ||
+                gamemodes_1.defaultWinCondition,
+        };
     }
     shiriCheck(word) {
         if (this.words.length < 1)

@@ -193,12 +193,27 @@ server.post("/create/:username", (req, res) => __awaiter(void 0, void 0, void 0,
 /** /game */
 server.post("/game/create", { logLevel: "warn" }, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     allowCredentials(res);
-    const userid = parseInt(req.cookies.loggedas, 10);
-    if (!userid)
-        throw { status: 403, message: "Not logged in" };
-    const options = JSON.parse(req.body);
-    const roomid = 99;
-    return { status: 200, roomid };
+    const creatorid = parseInt(req.cookies.loggedas, 10);
+    const { MaxPlayers, Score, WinCondition, Dictionary } = JSON.parse(req.body);
+    const freeRoomID = hub.getNextFreeRoom();
+    const room = new room_1.default(freeRoomID, undefined, undefined, false, MaxPlayers, undefined, Dictionary, creatorid, {
+        WinCondition,
+        Score,
+    });
+    hub.addRoom(room);
+    const promise = pool.promise();
+    const [insert] = yield promise.execute(queries_1.default.createRoom, [
+        freeRoomID,
+        creatorid,
+        Dictionary,
+        Score,
+        WinCondition,
+        MaxPlayers,
+    ]);
+    if (insert.affectedRows > 0)
+        return { id: room.id };
+    else
+        return { err: true };
 }));
 server.post("/game/:id/join", { logLevel: "warn" }, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     allowCredentials(res);
@@ -213,14 +228,20 @@ server.post("/game/:id/join", { logLevel: "warn" }, (req, res) => __awaiter(void
         }, room);
         if (room.addPlayer(userid)) {
             console.log("Roomstate:", room.getState(), room);
-            return {
+            const mode = room.getGamemode();
+            const ret = {
                 status: 200,
                 state: room.getState(),
                 currplayers: [...room.players],
-                language: room.language,
                 creator: room.creator,
-                modeid: room.getGamemode().id,
+                creationdata: {
+                    MaxPlayers: room.maxPlayers,
+                    Score: room.mode.Score,
+                    WinCondition: room.mode.WinCondition,
+                    Dictionary: room.language,
+                },
             };
+            return ret;
         }
         else
             throw { status: 403, message: "Unknown error" };
@@ -305,7 +326,7 @@ server.post("/game/:id/send", (req, res) => __awaiter(void 0, void 0, void 0, fu
                 if (!room.checkForWord(word)) {
                     if (room.shiriCheck(word)) {
                         room.registerWord(word.playerid, word.word, word.time);
-                        room.addPoints(playerid, room.getGamemode().wordToPts(word));
+                        room.addPoints(playerid, room.getGamemode().scoring.wordToPts(word));
                         room_1.default.emitEvent({
                             data: { type: "input", playerid, word: word.word },
                             time: word.time,
@@ -395,6 +416,19 @@ server.post("/logout", { logLevel: "warn" }, (req, res) => __awaiter(void 0, voi
     }
     res.clearCookie("loggedas");
     return true;
+}));
+/** /check */
+server.post("/check", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    allowCredentials(res);
+    const playerid = parseInt(req.cookies.loggedas, 10);
+    const room = hub.getRoom(parseInt(req.params.id, 10));
+    if (room) {
+        room_1.default.emitEvent({
+            data: { type: "check", playerid },
+            time: new Date().getTime(),
+        }, room);
+    }
+    return 1;
 }));
 /** /events */
 server.get("/events/:roomid", { logLevel: "warn" }, (req, res) => {

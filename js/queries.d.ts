@@ -6,6 +6,7 @@ declare const Queries: {
     getGuest: string;
     getRoomList: string;
     updateRoom: string;
+    createRoom: string;
     getNumberOfPlayersWithUsername: string;
 };
 export default Queries;

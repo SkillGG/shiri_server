@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const room_1 = __importDefault(require("./room"));
 const queries_1 = __importDefault(require("./queries"));
+const base_1 = require("../shiri_common/base");
 class Hub {
     constructor() {
         Object.defineProperty(this, "rooms", {
@@ -52,6 +53,13 @@ class Hub {
     getRoom(id) {
         return this.rooms.find((r) => r.id === id);
     }
+    getNextFreeRoom() {
+        var _a;
+        for (let i = 1; true; i++) {
+            if (!this.getRoom(i) || ((_a = this.getRoom(i)) === null || _a === void 0 ? void 0 : _a.finished))
+                return i;
+        }
+    }
     whereIs(playerid) {
         if (!playerid)
             return null;
@@ -87,11 +95,17 @@ class Hub {
                     const roomid = parseInt(e.roomid);
                     const maxplayers = parseInt(e.maxplayers || "10", 10);
                     const lang = parseInt(e.lang || "0", 10);
+                    const dic = (0, base_1.existsLanguage)(lang) ? lang : 0;
                     const creator = parseInt(e.creator || "1", 10);
                     const parsedData = room_1.default.parseState(e.gamestate || "");
                     const points = new Map(parsedData[1]);
-                    const mode = parseInt(e.mode, 10);
-                    this.addRoom(new room_1.default(roomid, undefined, parsedData[2], parsedData[0], maxplayers, points, lang, creator, mode));
+                    const wc = parseInt(e.wincondition, 10);
+                    const sc = parseInt(e.scoring, 10);
+                    const mode = {
+                        WinCondition: (0, base_1.existsWinCondition)(wc) ? wc : 0,
+                        Score: (0, base_1.existsScore)(sc) ? sc : 0,
+                    };
+                    this.addRoom(new room_1.default(roomid, undefined, parsedData[2], parsedData[0], maxplayers, points, dic, creator, mode));
                 });
             }
             this.rooms.forEach((e) => e.clearBadPlayers());
