@@ -101,14 +101,15 @@ export default class Room {
     return this.players.size;
   }
   addPlayer(id: number) {
-    if (this.players.size >= this.maxPlayers) return false;
+    if (this.players.has(id)) return {done:true};
+    if (this.players.size >= this.maxPlayers) return {done: false, error:"Too many players"};
     else {
-      if (!id) return false;
+      if (!id) return {done: false, error: "wrong id"};
       this.players.add(id);
       if (!this.points.has(id)) {
         this.points.set(id, 0);
       }
-      return true;
+      return {done:true};
     }
   }
   removePlayer(id: number) {

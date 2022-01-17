@@ -99,19 +99,25 @@ export default class Hub {
           WinCondition: existsWinCondition(wc) ? wc : 0,
           Score: existsScore(sc) ? sc : 0,
         };
-        this.addRoom(
-          new Room(
-            roomid,
-            undefined,
-            parsedData[2],
-            parsedData[0],
-            maxplayers,
-            points,
-            dic,
-            creator,
-            mode
-          )
+        const oldroom = this.getRoom(roomid);
+        let players;
+        if (oldroom) players = oldroom.players;
+        const newroom = new Room(
+          roomid,
+          players,
+          parsedData[2],
+          parsedData[0],
+          maxplayers,
+          points,
+          dic,
+          creator,
+          mode
         );
+        if (oldroom) {
+          newroom.evID = oldroom.evID;
+          newroom.eventEmitter = oldroom.eventEmitter;
+        }
+        this.addRoom(newroom);
       });
     }
     this.rooms.forEach((e) => e.clearBadPlayers());

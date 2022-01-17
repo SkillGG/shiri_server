@@ -105,7 +105,16 @@ class Hub {
                         WinCondition: (0, base_1.existsWinCondition)(wc) ? wc : 0,
                         Score: (0, base_1.existsScore)(sc) ? sc : 0,
                     };
-                    this.addRoom(new room_1.default(roomid, undefined, parsedData[2], parsedData[0], maxplayers, points, dic, creator, mode));
+                    const oldroom = this.getRoom(roomid);
+                    let players;
+                    if (oldroom)
+                        players = oldroom.players;
+                    const newroom = new room_1.default(roomid, players, parsedData[2], parsedData[0], maxplayers, points, dic, creator, mode);
+                    if (oldroom) {
+                        newroom.evID = oldroom.evID;
+                        newroom.eventEmitter = oldroom.eventEmitter;
+                    }
+                    this.addRoom(newroom);
                 });
             }
             this.rooms.forEach((e) => e.clearBadPlayers());

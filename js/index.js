@@ -226,22 +226,28 @@ server.post("/game/:id/join", { logLevel: "warn" }, (req, res) => __awaiter(void
             data: { type: "join", playerid: userid },
             time: new Date().getTime(),
         }, room);
-        if (room.addPlayer(userid)) {
-            console.log("Roomstate:", room.getState(), room);
-            const mode = room.getGamemode();
-            const ret = {
-                status: 200,
-                state: room.getState(),
-                currplayers: [...room.players],
-                creator: room.creator,
-                creationdata: {
-                    MaxPlayers: room.maxPlayers,
-                    Score: room.mode.Score,
-                    WinCondition: room.mode.WinCondition,
-                    Dictionary: room.language,
-                },
-            };
-            return ret;
+        const add = room.addPlayer(userid);
+        if (add) {
+            if (add.done) {
+                console.log("Roomstate:", room.getState(), room);
+                const mode = room.getGamemode();
+                const ret = {
+                    status: 200,
+                    state: room.getState(),
+                    currplayers: [...room.players],
+                    creator: room.creator,
+                    creationdata: {
+                        MaxPlayers: room.maxPlayers,
+                        Score: room.mode.Score,
+                        WinCondition: room.mode.WinCondition,
+                        Dictionary: room.language,
+                    },
+                };
+                return ret;
+            }
+            else {
+                throw { status: 400, message: add.error };
+            }
         }
         else
             throw { status: 403, message: "Unknown error" };
@@ -418,10 +424,11 @@ server.post("/logout", { logLevel: "warn" }, (req, res) => __awaiter(void 0, voi
     return true;
 }));
 /** /check */
-server.post("/check", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+server.post("/check/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     allowCredentials(res);
     const playerid = parseInt(req.cookies.loggedas, 10);
     const room = hub.getRoom(parseInt(req.params.id, 10));
+    console.log("checking connection to player ", playerid, room === null || room === void 0 ? void 0 : room.id);
     if (room) {
         room_1.default.emitEvent({
             data: { type: "check", playerid },

@@ -269,22 +269,27 @@ server.post(
         },
         room
       );
-      if (room.addPlayer(userid)) {
-        console.log("Roomstate:", room.getState(), room);
-        const mode = room.getGamemode();
-        const ret: BaseRoom & { status: number } = {
-          status: 200,
-          state: room.getState(),
-          currplayers: [...room.players],
-          creator: room.creator,
-          creationdata: {
-            MaxPlayers: room.maxPlayers,
-            Score: room.mode.Score,
-            WinCondition: room.mode.WinCondition,
-            Dictionary: room.language,
-          },
-        };
-        return ret;
+      const add = room.addPlayer(userid);
+      if (add) {
+        if (add.done) {
+          console.log("Roomstate:", room.getState(), room);
+          const mode = room.getGamemode();
+          const ret: BaseRoom & { status: number } = {
+            status: 200,
+            state: room.getState(),
+            currplayers: [...room.players],
+            creator: room.creator,
+            creationdata: {
+              MaxPlayers: room.maxPlayers,
+              Score: room.mode.Score,
+              WinCondition: room.mode.WinCondition,
+              Dictionary: room.language,
+            },
+          };
+          return ret;
+        } else {
+          throw { status: 400, message: add.error };
+        }
       } else throw { status: 403, message: "Unknown error" };
     } else
       throw {
@@ -486,10 +491,11 @@ server.post("/logout", { logLevel: "warn" }, async (req, res) => {
 
 /** /check */
 
-server.post("/check", async (req: FRequest<{ id: string }>, res) => {
+server.post("/check/:id", async (req: FRequest<{ id: string }>, res) => {
   allowCredentials(res);
   const playerid = parseInt(req.cookies.loggedas, 10);
   const room = hub.getRoom(parseInt(req.params.id, 10));
+  console.log("checking connection to player ", playerid, room?.id);
   if (room) {
     Room.emitEvent(
       {

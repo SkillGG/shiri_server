@@ -29,7 +29,13 @@ export default class Room {
     addPoints(id: number, num: number): void;
     checkForWord(word: Word): boolean;
     getNumberOfPlayersLoggedIn(): number;
-    addPlayer(id: number): boolean;
+    addPlayer(id: number): {
+        done: boolean;
+        error?: undefined;
+    } | {
+        done: boolean;
+        error: string;
+    };
     removePlayer(id: number): boolean;
     registerWord(playerid: number, str: string, time: number): void;
     getState(): string;

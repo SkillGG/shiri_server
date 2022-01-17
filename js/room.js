@@ -137,16 +137,18 @@ class Room {
         return this.players.size;
     }
     addPlayer(id) {
+        if (this.players.has(id))
+            return { done: true };
         if (this.players.size >= this.maxPlayers)
-            return false;
+            return { done: false, error: "Too many players" };
         else {
             if (!id)
-                return false;
+                return { done: false, error: "wrong id" };
             this.players.add(id);
             if (!this.points.has(id)) {
                 this.points.set(id, 0);
             }
-            return true;
+            return { done: true };
         }
     }
     removePlayer(id) {
