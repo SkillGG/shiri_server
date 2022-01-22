@@ -30,7 +30,7 @@ declare type CheckEvent = {
     };
 };
 export declare type WinConditionIDs = 0 | 1;
-export declare type ScoreIDs = 0 | 1 | 2;
+export declare type ScoreIDs = 0 | 1 | 2 | 101;
 export declare type LangIDs = 0 | 1;
 export declare type NewRoomData = {
     WinCondition: WinConditionIDs;

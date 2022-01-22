@@ -1,9 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.existsLanguage = exports.existsWinCondition = exports.existsScore = void 0;
-const existsScore = (n) => n === 0 || n === 1 || n === 2;
+const gamemodes_1 = require("./gamemodes");
+const language_1 = require("./language");
+const existsScore = (n) => !!gamemodes_1.ScoringSystems.find((sc) => n === sc.id);
 exports.existsScore = existsScore;
-const existsWinCondition = (n) => n === 0 || n === 1;
+const existsWinCondition = (n) => !!gamemodes_1.WinConditions.find((sc) => n === sc.id);
 exports.existsWinCondition = existsWinCondition;
-const existsLanguage = (n) => n === 0 || n === 1;
+const existsLanguage = (n) => !!(0, language_1.getLangList)().find((l) => l.id === n);
 exports.existsLanguage = existsLanguage;

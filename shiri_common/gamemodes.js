@@ -37,9 +37,13 @@ exports.defaultGameMode = {
 };
 exports.errTimeout = 2000;
 exports.ScoringSystems = [
+    exports.defaultScoring,
     Object.assign(Object.assign({}, exports.defaultScoring), { id: 1, description: "+1over4", wordToPts: (word) => {
             return word.word.length - 4;
         }, wordCSSClass: (w) => `plus1over4 ${w.word.length < 4 ? "plus1over4_bad" : ""}` }),
     Object.assign(Object.assign({}, exports.defaultScoring), { id: 2, description: "length", wordToPts: (word) => word.word.length }),
+    Object.assign(Object.assign({}, exports.defaultScoring), { id: 101, description: "+1over4_safe", wordToPts: (word) => {
+            return word.word.length > 4 ? word.word.length - 4 : 1;
+        }, wordCSSClass: (w) => `plus1over4` }),
 ];
-exports.WinConditions = [];
+exports.WinConditions = [exports.defaultWinCondition];
