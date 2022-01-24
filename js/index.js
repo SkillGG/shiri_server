@@ -156,9 +156,10 @@ server.post("/create/:username", (req, res) => __awaiter(void 0, void 0, void 0,
         throw { status: 400, message: "No username or pin!" };
     if (!/^\d{6}$/.exec(pin) || !/[a-z0-9]+/i.exec(username))
         throw { status: 400, message: "Wrong username or pin format!" };
-    const [selectusernamerows] = yield poolPromise.execute(queries_1.default.getNumberOfPlayersWithUsername, [username]);
-    if (Array.isArray(selectusernamerows)) {
-        if (parseInt(selectusernamerows[0].n) > 0)
+    // get number of players with given username
+    const [number_of_players] = yield poolPromise.execute(queries_1.default.getNumberOfPlayersWithUsername, [username]);
+    if (Array.isArray(number_of_players)) {
+        if (parseInt(number_of_players[0].n) > 0)
             throw {
                 status: 400,
                 mesage: "User with given name already exists",
@@ -234,7 +235,7 @@ server.post("/game/:id/join", { logLevel: "warn" }, (req, res) => __awaiter(void
                 const ret = {
                     status: 200,
                     state: room.getState(),
-                    currplayers: [...room.players],
+                    players: [...room.players],
                     creator: room.creator,
                     creationdata: {
                         MaxPlayers: room.maxPlayers,
@@ -324,6 +325,10 @@ server.post("/game/:id/send", (req, res) => __awaiter(void 0, void 0, void 0, fu
         }
     };
     if (room) {
+        if (room.finished) {
+            console.log("Room already completed");
+            throw { status: 400, message: "Game already closed" };
+        }
         if (room.shallowCorrect(word)) {
             busy = true;
             console.log("Deeply testing");
@@ -337,6 +342,13 @@ server.post("/game/:id/send", (req, res) => __awaiter(void 0, void 0, void 0, fu
                             data: { type: "input", playerid, word: word.word },
                             time: word.time,
                         }, room);
+                        const iswin = room.isWin();
+                        if (iswin) {
+                            room_1.default.emitEvent({
+                                data: { type: "win", playerid: iswin },
+                                time: new Date().getTime(),
+                            }, room);
+                        }
                     }
                     else {
                         // shiri bad
@@ -397,7 +409,9 @@ server.get("/game/list", (req, res) => __awaiter(void 0, void 0, void 0, functio
         recacheRooms();
         recacheRoomsCount = recacheEach;
     }
-    const roomlist = hub.rooms.reduce((prev, next) => {
+    const roomlist = hub.rooms
+        .filter((r) => !r.finished)
+        .reduce((prev, next) => {
         return (prev +
             `${next.id}[${next.getNumberOfPlayersLoggedIn()}/${next.maxPlayers}]${next.mode}!`);
     }, "");

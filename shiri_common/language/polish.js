@@ -18,6 +18,26 @@ exports.Polish = {
     wrongPass: "Zły PIN!",
     players: "Graczy",
     max: "Max",
+    notyetimplemented: "Jeszcze nie zaimplementowano",
+    createRoom: {
+        maxplayers: "Max graczy:",
+        createBtn: "Stwórz",
+        dictionary: "Słownik:",
+        scoring: {
+            fieldsetlegend: "Punktacja",
+            id0: "+1 za słowo",
+            id1: "+1 za każdą literę powyżej 4",
+            id101: "<5 Daje punkt",
+            id101_title: "Jeżeli ktoś poda słowo krótsze niż 5 doda punkt zamiast odejmować",
+            id2: "+1 za każdą literę w słowie",
+        },
+        wincond: {
+            id1: "Dopóki:",
+            fieldsetlegend: "Warunki zwycięstwa",
+            endless: "Nieskończone",
+            timed: "Na czas",
+        },
+    },
     pinInfo: react_1.default.createElement("span", null, "PIN powinien sk\u0142ada\u0107 si\u0119 z sze\u015Bciu cyfr."),
     unknownReason: "Z nieznanego powodu",
     passTooShort: "Twój PIN jest zbyt krótki",
@@ -66,7 +86,9 @@ exports.Polish = {
     },
     defaultScoreDescription: "Każde słowo warte +1 punkt",
     defaultWinDescription: "Tryb nieskończony",
-    winDescriptions: [],
+    winDescriptions: [
+        { id: "overN", description: "Powyżej N punktów" },
+    ],
     scoreDescriptions: [
         {
             id: "+1over4",
@@ -75,6 +97,10 @@ exports.Polish = {
         {
             id: "length",
             description: "Każda litera słowa jest równa 1 punkt",
+        },
+        {
+            id: "+1over4_safe",
+            description: "Dodatkowy punkt za każdą literę powyżej 4,\nsłowa poniżej 4 liczą się jako 1 punkt",
         },
     ],
 };

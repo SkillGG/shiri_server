@@ -1,8 +1,14 @@
 import Word from "./word";
+import { Room as BaseRoom } from "./../shiri_common/base";
 
 export type ParsedRoomData = [boolean, [number, number][], Word[]];
 
-import { SendEvent, NewRoomData, LangIDs } from "../shiri_common/base";
+import {
+  SendEvent,
+  NewRoomData,
+  LangIDs,
+  PlayerID,
+} from "../shiri_common/base";
 import {
   defaultGameMode,
   defaultScoring,
@@ -20,14 +26,14 @@ export type SendCallback = (data: SendEvent) => void;
 export type EventData = [SendEvent];
 
 export default class Room {
-  players: Set<number>;
+  players: Set<PlayerID>;
   words: Word[];
-  points: Map<number, number>;
+  points: Map<PlayerID, number>;
   id: number;
   finished: boolean;
   maxPlayers: number;
   language: LangIDs;
-  creator: Exclude<number, 0>;
+  creator: PlayerID;
   eventEmitter: EventEmitter;
   evID: number;
   mode: RoomMode;
@@ -40,7 +46,7 @@ export default class Room {
     pts: Map<number, number> = new Map<number, number>(),
     lang: LangIDs = 0,
     creator: number = 1,
-    mode: RoomMode = { Score: 0, WinCondition: 0 }
+    mode: RoomMode = { Score: { id: 0 }, WinCondition: { id: 0, data: {} } }
   ) {
     this.players = players;
     this.words = words;
@@ -54,15 +60,46 @@ export default class Room {
     this.evID = 0;
     this.mode = mode;
   }
+  isWin(): PlayerID | false {
+    console.log("checking if somebody won");
+    const gamemode = this.getGamemode();
+    const nrd: NewRoomData = {
+      MaxPlayers: this.maxPlayers,
+      Dictionary: this.language,
+      Score: this.mode.Score,
+      WinCondition: this.mode.WinCondition,
+    };
+    const room: BaseRoom = {
+      creationdata: nrd,
+      creator: this.creator,
+      players: [...this.players],
+      state: this.getState(),
+      gamemode,
+    };
+    console.log("nrd", nrd);
+    const pts = this.countPoints();
+    console.log("points", pts);
+    const iswin = gamemode.wincondition.isWin(room, pts);
+    console.log("won?", iswin);
+    if (iswin) {
+      // someone won
+      if (this.players.has(iswin)) {
+        this.finished = !!iswin;
+        return iswin;
+      }
+    }
+    return false;
+  }
   eventID(): number {
     return this.evID++;
   }
   getGamemode(): GameMode {
     return {
       scoring:
-        ScoringSystems.find((g) => g.id === this.mode.Score) || defaultScoring,
+        ScoringSystems.find((g) => g.id === this.mode.Score.id) ||
+        defaultScoring,
       wincondition:
-        WinConditions.find((w) => w.id === this.mode.WinCondition) ||
+        WinConditions.find((w) => w.id === this.mode.WinCondition.id) ||
         defaultWinCondition,
     };
   }
@@ -90,6 +127,16 @@ export default class Room {
     if (num < 0) this.points.set(id, (this.points.get(id) || 0) - num);
     this.clearBadPlayers();
   }
+  countPoints() {
+    const map = new Map<number, number>(
+      [...this.points].map((r) => [r[0], -r[1]])
+    );
+    const w_pts = this.getGamemode().scoring.wordToPts;
+    this.words.forEach((word) => {
+      map.set(word.playerid, (map.get(word.playerid) || 0) + w_pts(word));
+    });
+    return map;
+  }
   checkForWord(word: Word) {
     this.clearBadPlayers();
     for (let i = 0; i < this.words.length; i++) {
@@ -101,15 +148,16 @@ export default class Room {
     return this.players.size;
   }
   addPlayer(id: number) {
-    if (this.players.has(id)) return {done:true};
-    if (this.players.size >= this.maxPlayers) return {done: false, error:"Too many players"};
+    if (this.players.has(id)) return { done: true };
+    if (this.players.size >= this.maxPlayers)
+      return { done: false, error: "Too many players" };
     else {
-      if (!id) return {done: false, error: "wrong id"};
+      if (!id) return { done: false, error: "wrong id" };
       this.players.add(id);
       if (!this.points.has(id)) {
         this.points.set(id, 0);
       }
-      return {done:true};
+      return { done: true };
     }
   }
   removePlayer(id: number) {

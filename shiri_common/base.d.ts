@@ -4,13 +4,19 @@ export declare type Reason = "notInDic" | "alreadyIn" | "wrongStart" | "wordErro
 declare type InOutEvent = {
     data: {
         type: "leave" | "join";
-        playerid: number;
+        playerid: PlayerID;
+    };
+};
+declare type FinishEvent = {
+    data: {
+        type: "win";
+        playerid: PlayerID;
     };
 };
 declare type PointEvent = {
     data: {
         type: "points";
-        playerid: number;
+        playerid: PlayerID;
         points: number;
         reason?: Reason;
         word?: string;
@@ -19,36 +25,44 @@ declare type PointEvent = {
 declare type InputEvent = {
     data: {
         type: "input";
-        playerid: number;
+        playerid: PlayerID;
         word: string;
     };
 };
 declare type CheckEvent = {
     data: {
         type: "check";
-        playerid: number;
+        playerid: PlayerID;
     };
 };
 export declare type WinConditionIDs = 0 | 1;
+export declare type WinConditionData = {
+    points?: number;
+};
 export declare type ScoreIDs = 0 | 1 | 2 | 101;
 export declare type LangIDs = 0 | 1;
 export declare type NewRoomData = {
-    WinCondition: WinConditionIDs;
-    Score: ScoreIDs;
+    WinCondition: {
+        id: WinConditionIDs;
+        data: WinConditionData;
+    };
+    Score: {
+        id: ScoreIDs;
+    };
     MaxPlayers: number;
     Dictionary: LangIDs;
 };
 export declare const existsScore: (n: number) => n is ScoreIDs;
 export declare const existsWinCondition: (n: number) => n is WinConditionIDs;
 export declare const existsLanguage: (n: number) => n is LangIDs;
-export declare type SendEvent = (CheckEvent | InOutEvent | PointEvent | InputEvent) & {
+export declare type SendEvent = (CheckEvent | InOutEvent | PointEvent | InputEvent | FinishEvent) & {
     time: number;
 };
 export declare type Word = {
     /**
      * Player ID
      */
-    playerid: number;
+    playerid: PlayerID;
     /**
      * Time, the word was sent
      */
@@ -66,11 +80,11 @@ export declare type Room = {
     /**
      * Array of IDs of players currently in the room
      */
-    currplayers: number[];
+    players: PlayerID[];
     /**
      * ID of the player who created/is the owner of the room
      */
-    creator: number;
+    creator: PlayerID;
     /**
      * Room's various rules
      */

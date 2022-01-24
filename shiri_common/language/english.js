@@ -19,9 +19,29 @@ exports.English = {
     wrongPass: "Wrong PIN!",
     players: "Players",
     max: "Max",
+    notyetimplemented: "Not yet implemented",
     pinInfo: react_1.default.createElement("span", null, "PIN should consist of six digits."),
     unknownReason: "For unknown reason",
     passTooShort: "Your PIN is too short",
+    createRoom: {
+        maxplayers: "Max players:",
+        createBtn: "Create",
+        dictionary: "Dictionary:",
+        scoring: {
+            fieldsetlegend: "Scoring",
+            id0: "+1 per word",
+            id1: "+1 per letter over 4",
+            id101: "<5 Gives a point",
+            id101_title: "If someone uses a word with less then 5 letters they get 1 point instead of negative points",
+            id2: "+1 per each letter",
+        },
+        wincond: {
+            id1: "Unless points:",
+            fieldsetlegend: "Win condition",
+            endless: "Endless",
+            timed: "Timed",
+        },
+    },
     badWord: {
         wrongStart: {
             raw: "Word starts wrongly",
@@ -74,6 +94,12 @@ exports.English = {
             id: "length",
             description: "Every letter is worth one point",
         },
+        {
+            id: "+1over4_safe",
+            description: "Additional points for every letter over 4,\nwords shorter than 4 are worth only 1 point",
+        },
     ],
-    winDescriptions: [],
+    winDescriptions: [
+        { id: "overN", description: "Over N points" },
+    ],
 };

@@ -10,6 +10,7 @@ export declare type ModeDesctiption<T extends string> = {
 export declare type Language = {
     CODE: "EN" | "PL";
     id: number;
+    notyetimplemented: string;
     next: string;
     you: string;
     newRoom: string;
@@ -32,6 +33,25 @@ export declare type Language = {
         wdesc: string;
         mode: GameMode;
     }>;
+    createRoom: {
+        maxplayers: string;
+        dictionary: string;
+        scoring: {
+            fieldsetlegend: string;
+            id0: string;
+            id1: string;
+            id2: string;
+            id101: string;
+            id101_title: string;
+        };
+        wincond: {
+            timed: string;
+            endless: string;
+            id1: string;
+            fieldsetlegend: string;
+        };
+        createBtn: string;
+    };
     pinInfo: JSX.Element;
     unknownReason: string;
     name: string;
@@ -51,7 +71,8 @@ export declare type Language = {
     defaultWinDescription: string;
     scoreDescriptions: [
         ModeDesctiption<"+1over4">,
-        ModeDesctiption<"length">
+        ModeDesctiption<"length">,
+        ModeDesctiption<"+1over4_safe">
     ];
-    winDescriptions: [];
+    winDescriptions: [ModeDesctiption<"overN">];
 };

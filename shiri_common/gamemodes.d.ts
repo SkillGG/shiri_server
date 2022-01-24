@@ -1,5 +1,5 @@
 import React from "react";
-import { Word, Room, Points, PlayerID } from "./base";
+import { Word, Room, Points, PlayerID, ScoreIDs, WinConditionIDs } from "./base";
 export interface PlayerPointsRef {
     [key: number]: HTMLSpanElement;
 }
@@ -15,9 +15,9 @@ export interface GameRoomRefs {
 }
 export interface ModeInfo {
     description: string;
-    id: number;
 }
 export interface Scoring extends ModeInfo {
+    id: ScoreIDs;
     wordToPts(word: Word): number;
     onWordCame(word: Word, refs?: GameRoomRefs): void;
     onPtsCame(points: {
@@ -27,6 +27,7 @@ export interface Scoring extends ModeInfo {
     wordCSSClass: (w: Word) => string;
 }
 export interface WinCondition extends ModeInfo {
+    id: WinConditionIDs;
     isWin(room: Room, players: Points): false | PlayerID;
 }
 export interface GameMode {

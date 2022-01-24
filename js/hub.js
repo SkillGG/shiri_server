@@ -32,27 +32,42 @@ class Hub {
         this.rooms = [];
         this.roomid = 0;
     }
+    /**
+     *
+     * @param roomid id of a new room
+     * @returns A new Room created with default settings and id
+     */
     addNewRoom(roomid) {
         const newRoomId = roomid || this.roomid++;
         let newRoom = new room_1.default(newRoomId);
         this.rooms.push(newRoom);
         return newRoom;
     }
+    /**
+     *
+     * @param room Room to add
+     */
     addRoom(room) {
         const gotRoom = this.getRoom(room.id);
         if (gotRoom) {
-            console.log("room already exists", this.rooms[this.rooms.indexOf(gotRoom)]);
             this.rooms[this.rooms.indexOf(gotRoom)] = room;
             return;
         }
         else {
-            console.log("New room");
+            console.log("New room", room.id);
             this.rooms.push(room);
         }
     }
+    /**
+     * @returns Room with given ID or undefined if given doesn't exist
+     */
     getRoom(id) {
         return this.rooms.find((r) => r.id === id);
     }
+    /**
+     *
+     * @returns {number} ID of a free room
+     */
     getNextFreeRoom() {
         var _a;
         for (let i = 1; true; i++) {
@@ -60,6 +75,11 @@ class Hub {
                 return i;
         }
     }
+    /**
+     *
+     * @param playerid ID of a player
+     * @returns ID of a room that player is currently in
+     */
     whereIs(playerid) {
         if (!playerid)
             return null;
@@ -89,27 +109,37 @@ class Hub {
     init(db) {
         return __awaiter(this, void 0, void 0, function* () {
             let dbPromise = db.promise();
+            // get room list
             const [rows] = yield dbPromise.execute(queries_1.default.getRoomList);
             if (rows && Array.isArray(rows)) {
+                // for each room
                 rows.forEach((e) => {
+                    // parse database data
                     const roomid = parseInt(e.roomid);
+                    const oldroom = this.getRoom(roomid);
+                    let players;
+                    if (oldroom)
+                        players = oldroom.players;
                     const maxplayers = parseInt(e.maxplayers || "10", 10);
                     const lang = parseInt(e.lang || "0", 10);
                     const dic = (0, base_1.existsLanguage)(lang) ? lang : 0;
                     const creator = parseInt(e.creator || "1", 10);
                     const parsedData = room_1.default.parseState(e.gamestate || "");
                     const points = new Map(parsedData[1]);
-                    const wc = parseInt(e.wincondition, 10);
+                    const words = parsedData[2];
+                    const finished = parsedData[0];
+                    const wincond = e.wincondition.split("/");
+                    const wc = parseInt(wincond[0], 10);
+                    const wcdata = wincond[1]
+                        ? JSON.parse(wincond[1])
+                        : {};
                     const sc = parseInt(e.scoring, 10);
                     const mode = {
-                        WinCondition: (0, base_1.existsWinCondition)(wc) ? wc : 0,
-                        Score: (0, base_1.existsScore)(sc) ? sc : 0,
+                        WinCondition: { id: (0, base_1.existsWinCondition)(wc) ? wc : 0, data: wcdata },
+                        Score: { id: (0, base_1.existsScore)(sc) ? sc : 0 },
                     };
-                    const oldroom = this.getRoom(roomid);
-                    let players;
-                    if (oldroom)
-                        players = oldroom.players;
-                    const newroom = new room_1.default(roomid, players, parsedData[2], parsedData[0], maxplayers, points, dic, creator, mode);
+                    const newroom = new room_1.default(roomid, players, words, finished, maxplayers, points, dic, creator, mode);
+                    // fix throwing out players after refresh
                     if (oldroom) {
                         newroom.evID = oldroom.evID;
                         newroom.eventEmitter = oldroom.eventEmitter;
@@ -117,6 +147,7 @@ class Hub {
                     this.addRoom(newroom);
                 });
             }
+            // clear all NaN players
             this.rooms.forEach((e) => e.clearBadPlayers());
         });
     }

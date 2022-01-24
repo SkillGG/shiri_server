@@ -7,7 +7,7 @@ const word_1 = __importDefault(require("./word"));
 const gamemodes_1 = require("../shiri_common/gamemodes");
 const events_1 = __importDefault(require("events"));
 class Room {
-    constructor(id, players = new Set(), words = [], finished = false, maxPlayers = 4, pts = new Map(), lang = 0, creator = 1, mode = { Score: 0, WinCondition: 0 }) {
+    constructor(id, players = new Set(), words = [], finished = false, maxPlayers = 4, pts = new Map(), lang = 0, creator = 1, mode = { Score: { id: 0 }, WinCondition: { id: 0, data: {} } }) {
         Object.defineProperty(this, "players", {
             enumerable: true,
             configurable: true,
@@ -86,13 +86,44 @@ class Room {
         this.evID = 0;
         this.mode = mode;
     }
+    isWin() {
+        console.log("checking if somebody won");
+        const gamemode = this.getGamemode();
+        const nrd = {
+            MaxPlayers: this.maxPlayers,
+            Dictionary: this.language,
+            Score: this.mode.Score,
+            WinCondition: this.mode.WinCondition,
+        };
+        const room = {
+            creationdata: nrd,
+            creator: this.creator,
+            players: [...this.players],
+            state: this.getState(),
+            gamemode,
+        };
+        console.log("nrd", nrd);
+        const pts = this.countPoints();
+        console.log("points", pts);
+        const iswin = gamemode.wincondition.isWin(room, pts);
+        console.log("won?", iswin);
+        if (iswin) {
+            // someone won
+            if (this.players.has(iswin)) {
+                this.finished = !!iswin;
+                return iswin;
+            }
+        }
+        return false;
+    }
     eventID() {
         return this.evID++;
     }
     getGamemode() {
         return {
-            scoring: gamemodes_1.ScoringSystems.find((g) => g.id === this.mode.Score) || gamemodes_1.defaultScoring,
-            wincondition: gamemodes_1.WinConditions.find((w) => w.id === this.mode.WinCondition) ||
+            scoring: gamemodes_1.ScoringSystems.find((g) => g.id === this.mode.Score.id) ||
+                gamemodes_1.defaultScoring,
+            wincondition: gamemodes_1.WinConditions.find((w) => w.id === this.mode.WinCondition.id) ||
                 gamemodes_1.defaultWinCondition,
         };
     }
@@ -124,6 +155,14 @@ class Room {
         if (num < 0)
             this.points.set(id, (this.points.get(id) || 0) - num);
         this.clearBadPlayers();
+    }
+    countPoints() {
+        const map = new Map([...this.points].map((r) => [r[0], -r[1]]));
+        const w_pts = this.getGamemode().scoring.wordToPts;
+        this.words.forEach((word) => {
+            map.set(word.playerid, (map.get(word.playerid) || 0) + w_pts(word));
+        });
+        return map;
     }
     checkForWord(word) {
         this.clearBadPlayers();

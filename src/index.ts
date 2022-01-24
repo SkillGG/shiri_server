@@ -170,12 +170,13 @@ server.post(
       throw { status: 400, message: "No username or pin!" };
     if (!/^\d{6}$/.exec(pin) || !/[a-z0-9]+/i.exec(username))
       throw { status: 400, message: "Wrong username or pin format!" };
-    const [selectusernamerows] = await poolPromise.execute<xSql<{ n: string }>>(
+    // get number of players with given username
+    const [number_of_players] = await poolPromise.execute<xSql<{ n: string }>>(
       Queries.getNumberOfPlayersWithUsername,
       [username]
     );
-    if (Array.isArray(selectusernamerows)) {
-      if (parseInt(selectusernamerows[0].n) > 0)
+    if (Array.isArray(number_of_players)) {
+      if (parseInt(number_of_players[0].n) > 0)
         throw {
           status: 400,
           mesage: "User with given name already exists",
@@ -277,7 +278,7 @@ server.post(
           const ret: BaseRoom & { status: number } = {
             status: 200,
             state: room.getState(),
-            currplayers: [...room.players],
+            players: [...room.players],
             creator: room.creator,
             creationdata: {
               MaxPlayers: room.maxPlayers,
@@ -376,6 +377,10 @@ server.post("/game/:id/send", async (req: FRequest<{ id: string }>, res) => {
     }
   };
   if (room) {
+    if (room.finished) {
+      console.log("Room already completed");
+      throw { status: 400, message: "Game already closed" };
+    }
     if (room.shallowCorrect(word)) {
       busy = true;
       console.log("Deeply testing");
@@ -395,6 +400,16 @@ server.post("/game/:id/send", async (req: FRequest<{ id: string }>, res) => {
               },
               room
             );
+            const iswin = room.isWin();
+            if (iswin) {
+              Room.emitEvent(
+                {
+                  data: { type: "win", playerid: iswin },
+                  time: new Date().getTime(),
+                },
+                room
+              );
+            }
           } else {
             // shiri bad
             console.log("Word doesn't start at last letter of prev word");
@@ -454,14 +469,16 @@ server.get("/game/list", async (req, res) => {
     recacheRooms();
     recacheRoomsCount = recacheEach;
   }
-  const roomlist = hub.rooms.reduce((prev, next) => {
-    return (
-      prev +
-      `${next.id}[${next.getNumberOfPlayersLoggedIn()}/${next.maxPlayers}]${
-        next.mode
-      }!`
-    );
-  }, "");
+  const roomlist = hub.rooms
+    .filter((r) => !r.finished)
+    .reduce((prev, next) => {
+      return (
+        prev +
+        `${next.id}[${next.getNumberOfPlayersLoggedIn()}/${next.maxPlayers}]${
+          next.mode
+        }!`
+      );
+    }, "");
   return roomlist;
 });
 

@@ -2,11 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WinConditions = exports.ScoringSystems = exports.errTimeout = exports.defaultGameMode = exports.defaultWinCondition = exports.defaultScoring = void 0;
 exports.defaultScoring = {
-    wordToPts: function (word) {
+    wordToPts() {
         return 1;
     },
-    onWordCame: function (word, refs) { },
-    onPtsCame: (points, room, refs) => {
+    onWordCame() { },
+    onPtsCame(points, room, refs) {
         const { pts, playerid } = points;
         console.log("onptscame:", points);
         if (pts == 0)
@@ -25,7 +25,7 @@ exports.defaultScoring = {
     description: "default",
 };
 exports.defaultWinCondition = {
-    isWin: function (room, players) {
+    isWin() {
         return false;
     },
     id: 0,
@@ -38,12 +38,35 @@ exports.defaultGameMode = {
 exports.errTimeout = 2000;
 exports.ScoringSystems = [
     exports.defaultScoring,
-    Object.assign(Object.assign({}, exports.defaultScoring), { id: 1, description: "+1over4", wordToPts: (word) => {
+    Object.assign(Object.assign({}, exports.defaultScoring), { id: 1, description: "+1over4", wordToPts(word) {
             return word.word.length - 4;
-        }, wordCSSClass: (w) => `plus1over4 ${w.word.length < 4 ? "plus1over4_bad" : ""}` }),
+        },
+        wordCSSClass(word) {
+            return `plus1over4 ${word.word.length < 4 ? "plus1over4_bad" : ""}`;
+        } }),
     Object.assign(Object.assign({}, exports.defaultScoring), { id: 2, description: "length", wordToPts: (word) => word.word.length }),
-    Object.assign(Object.assign({}, exports.defaultScoring), { id: 101, description: "+1over4_safe", wordToPts: (word) => {
+    Object.assign(Object.assign({}, exports.defaultScoring), { id: 101, description: "+1over4_safe", wordToPts(word) {
             return word.word.length > 4 ? word.word.length - 4 : 1;
-        }, wordCSSClass: (w) => `plus1over4` }),
+        }, wordCSSClass: () => `plus1over4` }),
 ];
-exports.WinConditions = [exports.defaultWinCondition];
+exports.WinConditions = [
+    exports.defaultWinCondition,
+    {
+        description: "overN",
+        id: 1,
+        isWin(room, points) {
+            const { points: maxpts } = room.creationdata.WinCondition.data;
+            console.log("goal", maxpts);
+            if (maxpts) {
+                const winner = [...points].find((pts) => {
+                    console.log(pts, maxpts);
+                    return pts[1] >= maxpts;
+                });
+                console.log(winner);
+                if (winner)
+                    return winner[0];
+            }
+            return false;
+        },
+    },
+];
