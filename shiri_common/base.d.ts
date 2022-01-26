@@ -40,6 +40,9 @@ export declare type WinConditionData = {
     points?: number;
 };
 export declare type ScoreIDs = 0 | 1 | 2 | 101;
+export declare type ScoringData = {
+    length?: number;
+};
 export declare type LangIDs = 0 | 1;
 export declare type NewRoomData = {
     WinCondition: {
@@ -48,6 +51,7 @@ export declare type NewRoomData = {
     };
     Score: {
         id: ScoreIDs;
+        data: ScoringData;
     };
     MaxPlayers: number;
     Dictionary: LangIDs;

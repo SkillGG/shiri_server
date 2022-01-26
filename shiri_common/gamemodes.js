@@ -20,6 +20,7 @@ exports.defaultScoring = {
             }, exports.errTimeout);
         }
     },
+    letterCSSClass: () => "",
     wordCSSClass: () => "",
     id: 0,
     description: "default",
@@ -36,18 +37,29 @@ exports.defaultGameMode = {
     wincondition: exports.defaultWinCondition,
 };
 exports.errTimeout = 2000;
+const GM1_DEFAULTDATA = { length: 4 };
 exports.ScoringSystems = [
     exports.defaultScoring,
-    Object.assign(Object.assign({}, exports.defaultScoring), { id: 1, description: "+1over4", wordToPts(word) {
-            return word.word.length - 4;
+    Object.assign(Object.assign({}, exports.defaultScoring), { id: 1, description: "+1overN", wordToPts(word, room) {
+            const { length = GM1_DEFAULTDATA.length } = room.creationdata.Score.data;
+            return word.word.length - length;
         },
-        wordCSSClass(word) {
-            return `plus1over4 ${word.word.length < 4 ? "plus1over4_bad" : ""}`;
+        wordCSSClass(word, room) {
+            const { length = GM1_DEFAULTDATA.length } = room.creationdata.Score.data;
+            return `plus1overN ${word.word.length < length ? "plus1overN_bad" : ""}`;
+        },
+        letterCSSClass(w, i, room) {
+            const { length = GM1_DEFAULTDATA.length } = room.creationdata.Score.data;
+            return (i >= length && "pointed") || "";
         } }),
     Object.assign(Object.assign({}, exports.defaultScoring), { id: 2, description: "length", wordToPts: (word) => word.word.length }),
-    Object.assign(Object.assign({}, exports.defaultScoring), { id: 101, description: "+1over4_safe", wordToPts(word) {
-            return word.word.length > 4 ? word.word.length - 4 : 1;
-        }, wordCSSClass: () => `plus1over4` }),
+    Object.assign(Object.assign({}, exports.defaultScoring), { id: 101, description: "+1overN_safe", wordToPts(word, room) {
+            const { length = GM1_DEFAULTDATA.length } = room.creationdata.Score.data;
+            return word.word.length > length ? word.word.length - length : 1;
+        }, wordCSSClass: () => `plus1overN_safe`, letterCSSClass(w, i, room) {
+            const { length = GM1_DEFAULTDATA.length } = room.creationdata.Score.data;
+            return (i >= length && "pointed") || "";
+        } }),
 ];
 exports.WinConditions = [
     exports.defaultWinCondition,
@@ -56,13 +68,10 @@ exports.WinConditions = [
         id: 1,
         isWin(room, points) {
             const { points: maxpts } = room.creationdata.WinCondition.data;
-            console.log("goal", maxpts);
             if (maxpts) {
                 const winner = [...points].find((pts) => {
-                    console.log(pts, maxpts);
                     return pts[1] >= maxpts;
                 });
-                console.log(winner);
                 if (winner)
                     return winner[0];
             }

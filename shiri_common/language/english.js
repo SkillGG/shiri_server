@@ -30,9 +30,9 @@ exports.English = {
         scoring: {
             fieldsetlegend: "Scoring",
             id0: "+1 per word",
-            id1: "+1 per letter over 4",
-            id101: "<5 Gives a point",
-            id101_title: "If someone uses a word with less then 5 letters they get 1 point instead of negative points",
+            id1: "+1 per letter over",
+            id101: "<N Gives a point",
+            id101_title: "If someone uses a word with less then N letters they get 1 point instead of negative points",
             id2: "+1 per each letter",
         },
         wincond: {
@@ -67,7 +67,7 @@ exports.English = {
     joinedRoom: {
         raw: "Joined room:",
         fill: ({ value }) => `Joined to room #${value}`,
-        xfill: ({ value, lang, mode = gamemodes_1.defaultGameMode, sdesc, wdesc, onClick, }) => (react_1.default.createElement("div", null,
+        xfill: ({ value, lang, mode = gamemodes_1.defaultGameMode, sdesc, length, wdesc, points, onClick, }) => (react_1.default.createElement("div", null,
             "Joined room #",
             value,
             "[",
@@ -77,9 +77,18 @@ exports.English = {
                 react_1.default.createElement("br", null),
                 react_1.default.createElement("span", { title: sdesc },
                     "Mode: ",
-                    mode.scoring.id),
+                    mode.scoring.id,
+                    length ? react_1.default.createElement("span", null,
+                        "(",
+                        length,
+                        ")") : react_1.default.createElement(react_1.default.Fragment, null)),
                 "/",
-                react_1.default.createElement("span", { title: wdesc }, mode.wincondition.id))),
+                react_1.default.createElement("span", { title: wdesc },
+                    mode.wincondition.id,
+                    points ? react_1.default.createElement("span", null,
+                        "(",
+                        points,
+                        ")") : react_1.default.createElement(react_1.default.Fragment, null)))),
             react_1.default.createElement("br", null),
             react_1.default.createElement("span", { className: "goBack", onClick: onClick }, "Leave"))),
     },
@@ -87,19 +96,31 @@ exports.English = {
     defaultWinDescription: "Endless Mode",
     scoreDescriptions: [
         {
-            id: "+1over4",
-            description: "Additional points for every letter over 4",
+            id: "+1overN",
+            description: {
+                raw: "Additional points for every letter over N",
+                fill: ({ length }) => `Additional points for every letter over ${length}`,
+            },
         },
         {
             id: "length",
             description: "Every letter is worth one point",
         },
         {
-            id: "+1over4_safe",
-            description: "Additional points for every letter over 4,\nwords shorter than 4 are worth only 1 point",
+            id: "+1overN_safe",
+            description: {
+                raw: "Additional points for every letter over N,\nwords shorter than N are worth only 1 point",
+                fill: ({ length }) => `Additional points for every letter over ${length},\nwords shorter than ${length} are worth only 1 point`,
+            },
         },
     ],
     winDescriptions: [
-        { id: "overN", description: "Over N points" },
+        {
+            id: "overN",
+            description: {
+                raw: "First over N points wins",
+                fill: ({ points }) => `First over ${points} points wins`,
+            },
+        },
     ],
 };

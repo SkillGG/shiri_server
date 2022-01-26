@@ -7,7 +7,10 @@ const word_1 = __importDefault(require("./word"));
 const gamemodes_1 = require("../shiri_common/gamemodes");
 const events_1 = __importDefault(require("events"));
 class Room {
-    constructor(id, players = new Set(), words = [], finished = false, maxPlayers = 4, pts = new Map(), lang = 0, creator = 1, mode = { Score: { id: 0 }, WinCondition: { id: 0, data: {} } }) {
+    constructor(id, players = new Set(), words = [], finished = false, maxPlayers = 4, pts = new Map(), lang = 0, creator = 1, mode = {
+        Score: { id: 0, data: {} },
+        WinCondition: { id: 0, data: {} },
+    }) {
         Object.defineProperty(this, "players", {
             enumerable: true,
             configurable: true,
@@ -86,9 +89,7 @@ class Room {
         this.evID = 0;
         this.mode = mode;
     }
-    isWin() {
-        console.log("checking if somebody won");
-        const gamemode = this.getGamemode();
+    toBaseRoom() {
         const nrd = {
             MaxPlayers: this.maxPlayers,
             Dictionary: this.language,
@@ -100,13 +101,15 @@ class Room {
             creator: this.creator,
             players: [...this.players],
             state: this.getState(),
-            gamemode,
+            gamemode: this.getGamemode(),
         };
-        console.log("nrd", nrd);
+        return room;
+    }
+    isWin() {
+        console.log("checking if somebody won");
+        const room = this.toBaseRoom();
         const pts = this.countPoints();
-        console.log("points", pts);
-        const iswin = gamemode.wincondition.isWin(room, pts);
-        console.log("won?", iswin);
+        const iswin = room.gamemode.wincondition.isWin(room, pts);
         if (iswin) {
             // someone won
             if (this.players.has(iswin)) {
@@ -157,10 +160,11 @@ class Room {
         this.clearBadPlayers();
     }
     countPoints() {
+        const room = this.toBaseRoom();
         const map = new Map([...this.points].map((r) => [r[0], -r[1]]));
         const w_pts = this.getGamemode().scoring.wordToPts;
         this.words.forEach((word) => {
-            map.set(word.playerid, (map.get(word.playerid) || 0) + w_pts(word));
+            map.set(word.playerid, (map.get(word.playerid) || 0) + w_pts(word, room));
         });
         return map;
     }

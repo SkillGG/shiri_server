@@ -26,8 +26,8 @@ exports.Polish = {
         scoring: {
             fieldsetlegend: "Punktacja",
             id0: "+1 za słowo",
-            id1: "+1 za każdą literę powyżej 4",
-            id101: "<5 Daje punkt",
+            id1: "+1 za każdą literę powyżej",
+            id101: "<N Daje punkt",
             id101_title: "Jeżeli ktoś poda słowo krótsze niż 5 doda punkt zamiast odejmować",
             id2: "+1 za każdą literę w słowie",
         },
@@ -68,7 +68,7 @@ exports.Polish = {
     joinedRoom: {
         raw: "W pokoju:",
         fill: ({ value }) => `W pokoju #${value}`,
-        xfill: ({ value, lang, mode, sdesc, wdesc, onClick }) => (react_1.default.createElement("div", null,
+        xfill: ({ value, lang, mode, sdesc, points, wdesc, onClick }) => (react_1.default.createElement("div", null,
             "W pokoju #",
             value,
             "[",
@@ -78,29 +78,50 @@ exports.Polish = {
                 react_1.default.createElement("br", null),
                 react_1.default.createElement("span", { title: sdesc },
                     "Tryb: ",
-                    mode.scoring.id),
+                    mode.scoring.id,
+                    length ? react_1.default.createElement("span", null,
+                        "(",
+                        length,
+                        ")") : react_1.default.createElement(react_1.default.Fragment, null)),
                 "/",
-                react_1.default.createElement("span", { title: wdesc }, mode.wincondition.id))),
+                react_1.default.createElement("span", { title: wdesc },
+                    mode.wincondition.id,
+                    points ? react_1.default.createElement("span", null,
+                        "(",
+                        points,
+                        ")") : react_1.default.createElement(react_1.default.Fragment, null)))),
             react_1.default.createElement("br", null),
             react_1.default.createElement("span", { className: "goBack", onClick: onClick }, "Wyjd\u017A"))),
     },
     defaultScoreDescription: "Każde słowo warte +1 punkt",
     defaultWinDescription: "Tryb nieskończony",
     winDescriptions: [
-        { id: "overN", description: "Powyżej N punktów" },
+        {
+            id: "overN",
+            description: {
+                raw: "Powyżej N punktów",
+                fill: ({ points }) => `Wygrywa pierwszy powyżej ${points} punktów`,
+            },
+        },
     ],
     scoreDescriptions: [
         {
-            id: "+1over4",
-            description: "Dodatkowy punkt za każdą literę powyżej 4",
+            id: "+1overN",
+            description: {
+                raw: "Dodatkowy punkt za każdą literę powyżej N",
+                fill: ({ length }) => `Dodatkowy punkt za każdą literę powyżej ${length}`,
+            },
         },
         {
             id: "length",
             description: "Każda litera słowa jest równa 1 punkt",
         },
         {
-            id: "+1over4_safe",
-            description: "Dodatkowy punkt za każdą literę powyżej 4,\nsłowa poniżej 4 liczą się jako 1 punkt",
+            id: "+1overN_safe",
+            description: {
+                raw: "Dodatkowy punkt za każdą literę powyżej N,\nsłowa poniżej N liczą się jako 1 punkt",
+                fill: ({ length }) => `Dodatkowy punkt za każdą literę powyżej ${length},\nsłowa poniżej ${length} liczą się jako 1 punkt`,
+            },
         },
     ],
 };

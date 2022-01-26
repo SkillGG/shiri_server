@@ -1,5 +1,6 @@
 /// <reference types="node" />
 import Word from "./word";
+import { Room as BaseRoom } from "./../shiri_common/base";
 export declare type ParsedRoomData = [boolean, [number, number][], Word[]];
 import { SendEvent, NewRoomData, LangIDs, PlayerID } from "../shiri_common/base";
 import { GameMode } from "../shiri_common/gamemodes";
@@ -20,6 +21,7 @@ export default class Room {
     evID: number;
     mode: RoomMode;
     constructor(id: number, players?: Set<number>, words?: Word[], finished?: boolean, maxPlayers?: number, pts?: Map<number, number>, lang?: LangIDs, creator?: number, mode?: RoomMode);
+    toBaseRoom(): Readonly<Required<BaseRoom>>;
     isWin(): PlayerID | false;
     eventID(): number;
     getGamemode(): GameMode;

@@ -18,13 +18,14 @@ export interface ModeInfo {
 }
 export interface Scoring extends ModeInfo {
     id: ScoreIDs;
-    wordToPts(word: Word): number;
+    wordToPts(word: Word, room: Room): number;
     onWordCame(word: Word, refs?: GameRoomRefs): void;
     onPtsCame(points: {
         pts: number;
         playerid: Exclude<number, 0>;
     }, room: Room, refs?: GameRoomRefs): void;
-    wordCSSClass: (w: Word) => string;
+    wordCSSClass: (w: Word, room: Room) => string;
+    letterCSSClass: (w: Word, i: number, room: Room) => string;
 }
 export interface WinCondition extends ModeInfo {
     id: WinConditionIDs;

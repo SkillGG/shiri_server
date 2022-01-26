@@ -6,6 +6,7 @@ import {
   existsLanguage,
   existsScore,
   existsWinCondition,
+  ScoringData,
   WinConditionData,
 } from "../shiri_common/base";
 
@@ -127,10 +128,14 @@ export default class Hub {
         const wcdata: WinConditionData = wincond[1]
           ? JSON.parse(wincond[1])
           : {};
-        const sc = parseInt(e.scoring, 10);
+
+        const scoring = e.scoring.split("/");
+        const sc = parseInt(scoring[0], 10);
+        const scdata: ScoringData = scoring[1] ? JSON.parse(scoring[1]) : {};
+
         const mode: RoomMode = {
           WinCondition: { id: existsWinCondition(wc) ? wc : 0, data: wcdata },
-          Score: { id: existsScore(sc) ? sc : 0 },
+          Score: { id: existsScore(sc) ? sc : 0, data: scdata },
         };
 
         const newroom = new Room(

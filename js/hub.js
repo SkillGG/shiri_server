@@ -133,10 +133,12 @@ class Hub {
                     const wcdata = wincond[1]
                         ? JSON.parse(wincond[1])
                         : {};
-                    const sc = parseInt(e.scoring, 10);
+                    const scoring = e.scoring.split("/");
+                    const sc = parseInt(scoring[0], 10);
+                    const scdata = scoring[1] ? JSON.parse(scoring[1]) : {};
                     const mode = {
                         WinCondition: { id: (0, base_1.existsWinCondition)(wc) ? wc : 0, data: wcdata },
-                        Score: { id: (0, base_1.existsScore)(sc) ? sc : 0 },
+                        Score: { id: (0, base_1.existsScore)(sc) ? sc : 0, data: scdata },
                     };
                     const newroom = new room_1.default(roomid, players, words, finished, maxplayers, points, dic, creator, mode);
                     // fix throwing out players after refresh

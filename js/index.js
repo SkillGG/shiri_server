@@ -201,18 +201,21 @@ server.post("/game/create", { logLevel: "warn" }, (req, res) => __awaiter(void 0
         WinCondition,
         Score,
     });
-    hub.addRoom(room);
     const promise = pool.promise();
     const [insert] = yield promise.execute(queries_1.default.createRoom, [
         freeRoomID,
         creatorid,
         Dictionary,
-        Score,
-        WinCondition,
+        `${Score.id}/${Object.keys(Score.data).length ? JSON.stringify(Score.data) : ""}`,
+        `${WinCondition.id}/${Object.keys(WinCondition.data).length
+            ? JSON.stringify(WinCondition.data)
+            : ""}`,
         MaxPlayers,
     ]);
-    if (insert.affectedRows > 0)
+    if (insert.affectedRows > 0) {
+        hub.addRoom(room);
         return { id: room.id };
+    }
     else
         return { err: true };
 }));
@@ -230,20 +233,7 @@ server.post("/game/:id/join", { logLevel: "warn" }, (req, res) => __awaiter(void
         const add = room.addPlayer(userid);
         if (add) {
             if (add.done) {
-                console.log("Roomstate:", room.getState(), room);
-                const mode = room.getGamemode();
-                const ret = {
-                    status: 200,
-                    state: room.getState(),
-                    players: [...room.players],
-                    creator: room.creator,
-                    creationdata: {
-                        MaxPlayers: room.maxPlayers,
-                        Score: room.mode.Score,
-                        WinCondition: room.mode.WinCondition,
-                        Dictionary: room.language,
-                    },
-                };
+                const ret = Object.assign(Object.assign({}, room.toBaseRoom()), { status: 200 });
                 return ret;
             }
             else {
@@ -337,7 +327,7 @@ server.post("/game/:id/send", (req, res) => __awaiter(void 0, void 0, void 0, fu
                 if (!room.checkForWord(word)) {
                     if (room.shiriCheck(word)) {
                         room.registerWord(word.playerid, word.word, word.time);
-                        room.addPoints(playerid, room.getGamemode().scoring.wordToPts(word));
+                        room.addPoints(playerid, room.getGamemode().scoring.wordToPts(word, room.toBaseRoom()));
                         room_1.default.emitEvent({
                             data: { type: "input", playerid, word: word.word },
                             time: word.time,

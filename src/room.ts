@@ -46,7 +46,10 @@ export default class Room {
     pts: Map<number, number> = new Map<number, number>(),
     lang: LangIDs = 0,
     creator: number = 1,
-    mode: RoomMode = { Score: { id: 0 }, WinCondition: { id: 0, data: {} } }
+    mode: RoomMode = {
+      Score: { id: 0, data: {} },
+      WinCondition: { id: 0, data: {} },
+    }
   ) {
     this.players = players;
     this.words = words;
@@ -60,27 +63,27 @@ export default class Room {
     this.evID = 0;
     this.mode = mode;
   }
-  isWin(): PlayerID | false {
-    console.log("checking if somebody won");
-    const gamemode = this.getGamemode();
+  toBaseRoom() {
     const nrd: NewRoomData = {
       MaxPlayers: this.maxPlayers,
       Dictionary: this.language,
       Score: this.mode.Score,
       WinCondition: this.mode.WinCondition,
     };
-    const room: BaseRoom = {
+    const room: Readonly<Required<BaseRoom>> = {
       creationdata: nrd,
       creator: this.creator,
       players: [...this.players],
       state: this.getState(),
-      gamemode,
+      gamemode: this.getGamemode(),
     };
-    console.log("nrd", nrd);
+    return room;
+  }
+  isWin(): PlayerID | false {
+    console.log("checking if somebody won");
+    const room = this.toBaseRoom();
     const pts = this.countPoints();
-    console.log("points", pts);
-    const iswin = gamemode.wincondition.isWin(room, pts);
-    console.log("won?", iswin);
+    const iswin = room.gamemode.wincondition.isWin(room, pts);
     if (iswin) {
       // someone won
       if (this.players.has(iswin)) {
@@ -128,12 +131,13 @@ export default class Room {
     this.clearBadPlayers();
   }
   countPoints() {
+    const room = this.toBaseRoom();
     const map = new Map<number, number>(
       [...this.points].map((r) => [r[0], -r[1]])
     );
     const w_pts = this.getGamemode().scoring.wordToPts;
     this.words.forEach((word) => {
-      map.set(word.playerid, (map.get(word.playerid) || 0) + w_pts(word));
+      map.set(word.playerid, (map.get(word.playerid) || 0) + w_pts(word, room));
     });
     return map;
   }

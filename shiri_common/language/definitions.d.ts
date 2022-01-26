@@ -4,6 +4,8 @@ export declare type InjectableField<T> = {
     raw: string;
     fill(fill: T): string;
 };
+export declare const isInjectable: (n: any) => n is InjectableField<any>;
+export declare const isXFill: (n: any) => boolean;
 export declare type XFill<T> = {
     xfill?(fill: T): JSX.Element;
 };

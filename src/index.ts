@@ -18,13 +18,7 @@ import CookiePlugin, { FastifyCookieOptions } from "fastify-cookie";
 import CorsPlugin, { FastifyCorsOptions } from "fastify-cors";
 import { on } from "events";
 import Room, { EventData } from "./room";
-import {
-  NewRoomData,
-  SendEvent,
-  Room as BaseRoom,
-  existsWinCondition,
-} from "../shiri_common/base";
-import { WinConditions } from "../shiri_common/gamemodes";
+import { NewRoomData, SendEvent, Room as BaseRoom } from "../shiri_common/base";
 import { OkPacket } from "mysql2";
 
 type xSql<T> = (T & mysql.OkPacket)[];
@@ -238,18 +232,25 @@ server.post(
         Score,
       }
     );
-    hub.addRoom(room);
     const promise = pool.promise();
     const [insert] = await promise.execute<OkPacket>(Queries.createRoom, [
       freeRoomID,
       creatorid,
       Dictionary,
-      Score,
-      WinCondition,
+      `${Score.id}/${
+        Object.keys(Score.data).length ? JSON.stringify(Score.data) : ""
+      }`,
+      `${WinCondition.id}/${
+        Object.keys(WinCondition.data).length
+          ? JSON.stringify(WinCondition.data)
+          : ""
+      }`,
       MaxPlayers,
     ]);
-    if (insert.affectedRows > 0) return { id: room.id };
-    else return { err: true };
+    if (insert.affectedRows > 0) {
+      hub.addRoom(room);
+      return { id: room.id };
+    } else return { err: true };
   }
 );
 
@@ -273,19 +274,9 @@ server.post(
       const add = room.addPlayer(userid);
       if (add) {
         if (add.done) {
-          console.log("Roomstate:", room.getState(), room);
-          const mode = room.getGamemode();
           const ret: BaseRoom & { status: number } = {
+            ...room.toBaseRoom(),
             status: 200,
-            state: room.getState(),
-            players: [...room.players],
-            creator: room.creator,
-            creationdata: {
-              MaxPlayers: room.maxPlayers,
-              Score: room.mode.Score,
-              WinCondition: room.mode.WinCondition,
-              Dictionary: room.language,
-            },
           };
           return ret;
         } else {
@@ -391,7 +382,7 @@ server.post("/game/:id/send", async (req: FRequest<{ id: string }>, res) => {
             room.registerWord(word.playerid, word.word, word.time);
             room.addPoints(
               playerid,
-              room.getGamemode().scoring.wordToPts(word)
+              room.getGamemode().scoring.wordToPts(word, room.toBaseRoom())
             );
             Room.emitEvent(
               {

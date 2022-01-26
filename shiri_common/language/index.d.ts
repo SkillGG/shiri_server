@@ -3,9 +3,12 @@ import { GameMode } from "../gamemodes";
 import { InjectableField, XFillOnClick } from "./definitions";
 export declare const getLangList: () => Readonly<Language[]>;
 export declare const getLanguage: (lang: number) => Language;
-export declare type ModeDesctiption<T extends string> = {
+export declare type ModeDescription<T extends string> = {
     description: string;
     id: T;
+};
+export declare type XModeDescription<T extends string, X> = Pick<ModeDescription<T>, "id"> & {
+    description: InjectableField<X>;
 };
 export declare type Language = {
     CODE: "EN" | "PL";
@@ -32,6 +35,8 @@ export declare type Language = {
         sdesc: string;
         wdesc: string;
         mode: GameMode;
+        length?: number;
+        points?: number;
     }>;
     createRoom: {
         maxplayers: string;
@@ -70,9 +75,15 @@ export declare type Language = {
     defaultScoreDescription: string;
     defaultWinDescription: string;
     scoreDescriptions: [
-        ModeDesctiption<"+1over4">,
-        ModeDesctiption<"length">,
-        ModeDesctiption<"+1over4_safe">
+        XModeDescription<"+1overN", {
+            length: number;
+        }>,
+        ModeDescription<"length">,
+        XModeDescription<"+1overN_safe", {
+            length: number;
+        }>
     ];
-    winDescriptions: [ModeDesctiption<"overN">];
+    winDescriptions: [XModeDescription<"overN", {
+        points: number;
+    }>];
 };
